@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Меню</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#2c2c2c 0%,#1a1a1a 100%);min-height:100vh;padding:20px}
+.container{max-width:600px;margin:0 auto;background:linear-gradient(135deg,#6b4d8a 0%,#000000 100%);border-radius:20px;box-shadow:0 20px 60px rgba(0,0,0,0.5);overflow:hidden;position:relative}
+.header{background:linear-gradient(135deg,#6b4d8a 0%,#000000 100%);color:white;padding:30px 20px 20px;text-align:center}
+.header h1{font-size:2em;margin-bottom:5px}
+.header p{opacity:0.9;font-size:0.9em;margin-bottom:20px}
+.tabs{display:flex;gap:10px;padding:0 20px}
+.tab{flex:1;padding:12px 20px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.6);border:none;border-radius:10px 10px 0 0;cursor:pointer;font-size:1.1em;transition:all 0.3s}
+.tab.active{background:rgba(255,255,255,0.95);color:#5a4d8a}
+.content{display:none;padding:25px 25px 80px}
+.content.active{display:block}
+.category-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:15px;margin-top:10px}
+.category-card{background:rgba(255,255,255,0.1);border-radius:15px;padding:20px;text-align:center;cursor:pointer;transition:all 0.3s}
+.category-card:hover{background:rgba(255,255,255,0.2);transform:translateY(-5px)}
+.category-icon{font-size:3em;margin-bottom:10px}
+.category-name{color:white;font-size:1em;font-weight:500}
+.back-button{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;background:rgba(255,255,255,0.1);color:white;border:none;border-radius:10px;cursor:pointer;margin-bottom:20px}
+.section-title{font-size:1.5em;color:#fff;margin:25px 0 15px;padding-bottom:10px;border-bottom:3px solid #9d7fc4;display:flex;align-items:center}
+.menu-item{display:flex;justify-content:space-between;align-items:center;padding:12px 15px;margin:8px 0;background:rgba(255,255,255,0.1);border-radius:10px;cursor:pointer;transition:all 0.3s}
+.menu-item:hover{background:rgba(255,255,255,0.2);transform:translateX(5px)}
+.item-name{font-size:1.1em;color:#fff;font-weight:500}
+.item-description{font-size:0.85em;color:#d8c9e8;margin-top:3px}
+.item-price{font-size:1.1em;color:#c8b3e0;font-weight:bold;margin-left:15px}
+.price-eur{font-size:0.85em;color:#a89bbf;display:block;margin-top:2px}
+.cart-button{position:fixed;bottom:30px;right:30px;width:60px;height:60px;background:linear-gradient(135deg,#7d5ba0 0%,#6b4d8a 100%);border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.8em;z-index:999}
+.cart-badge{position:absolute;top:-5px;right:-5px;background:#ff4444;color:white;border-radius:50%;width:25px;height:25px;display:flex;align-items:center;justify-content:center;font-size:0.7rem;font-weight:bold}
+.popup-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:1000}
+.popup-overlay.active{display:flex;justify-content:center;align-items:center;padding:20px}
+.popup{background:white;border-radius:20px;padding:30px;max-width:450px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+.popup-close{position:absolute;top:15px;right:15px;font-size:2em;color:#999;cursor:pointer}
+.popup-icon{font-size:4em;text-align:center;margin-bottom:15px}
+.popup-title{font-size:1.8em;color:#333;text-align:center;margin-bottom:15px;font-weight:bold}
+.popup-description{font-size:1em;color:#666;text-align:center;margin-bottom:20px}
+.popup-price{font-size:2em;color:#7d5ba0;text-align:center;font-weight:bold}
+.extras-section{margin-top:25px;padding-top:20px;border-top:2px solid #eee}
+.extras-title{font-size:1.2em;color:#333;margin-bottom:15px;font-weight:bold}
+.extra-item{display:flex;align-items:center;padding:10px;margin:8px 0;background:#f8f9fa;border-radius:8px;cursor:pointer}
+.extra-item input[type="checkbox"]{width:20px;height:20px;margin-right:12px;cursor:pointer;accent-color:#7d5ba0}
+.extra-name{flex:1;color:#333}
+.extra-price{color:#7d5ba0;font-weight:bold}
+.total-section{margin-top:20px;padding-top:15px;border-top:2px solid #7d5ba0;display:flex;justify-content:space-between}
+.total-label{font-size:1.3em;color:#333;font-weight:bold}
+.total-price{font-size:1.5em;color:#7d5ba0;font-weight:bold}
+.add-to-order-btn{width:100%;padding:15px;margin-top:20px;background:linear-gradient(135deg,#7d5ba0 0%,#6b4d8a 100%);color:white;border:none;border-radius:10px;font-size:1.1em;font-weight:bold;cursor:pointer}
+.cart-item{display:flex;justify-content:space-between;padding:15px;margin:10px 0;background:#f8f9fa;border-radius:10px}
+.cart-item-info{flex:1}
+.cart-item-name{font-size:1.1em;font-weight:bold;color:#333;margin-bottom:5px}
+.cart-item-extras{font-size:0.9em;color:#666;margin-bottom:5px}
+.cart-item-price{font-size:1.2em;color:#7d5ba0;font-weight:bold}
+.cart-item-controls{display:flex;align-items:center;gap:10px;margin-left:10px}
+.qty-btn{background:#7d5ba0;color:white;border:none;border-radius:5px;width:30px;height:30px;cursor:pointer;font-size:1.2em;display:flex;align-items:center;justify-content:center;transition:all 0.3s}
+.qty-btn:hover{background:#6b4d8a;transform:scale(1.1)}
+.qty-btn:disabled{background:#ccc;cursor:not-allowed;transform:scale(1)}
+.qty-display{font-size:1.1em;font-weight:bold;color:#333;min-width:25px;text-align:center}
+.cart-item-remove{background:#ff4444;color:white;border:none;border-radius:50%;width:30px;height:30px;cursor:pointer;font-size:1.2em}
+.cart-empty{text-align:center;color:#999;padding:40px;font-size:1.2em}
+.cart-total{margin-top:20px;padding-top:20px;border-top:3px solid #7d5ba0;display:flex;justify-content:space-between}
+.cart-total-label{font-size:1.5em;font-weight:bold;color:#333}
+.cart-total-price{font-size:1.8em;font-weight:bold;color:#7d5ba0}
+.finish-order-btn{width:100%;padding:18px;margin-top:20px;background:linear-gradient(135deg,#4CAF50 0%,#45a049 100%);color:white;border:none;border-radius:10px;font-size:1.2em;font-weight:bold;cursor:pointer}
+.hidden{display:none!important}.waiter-button {
+    position: fixed;
+    bottom: 110px; /* над количката */
+    right: 30px;
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #ffb347 0%, #ff8300 100%);
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8em;
+    z-index: 999;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    transition: 0.3s;
+}
+#orderPopup {
+    display:none;
+    position:fixed;
+    top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.7);
+    z-index:2000;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+#orderPopup.active {
+    display:flex;
+}
+#waiterPopup {
+    display:none;
+    position:fixed;
+    top:0; left:0; width:100%; height:100%;
+    background:rgba(0,0,0,0.7);
+    z-index:2000;
+    justify-content:center;
+    align-items:center;
+    padding:20px;
+}
+#waiterPopup.active {
+    display:flex;
+}
+.popup-qty-control {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin: 20px auto;
+    background: #7d5ba0;
+    border-radius: 12px;
+    padding: 8px;
+    width: fit-content;
+    border: 2px solid #ffffff;
+}
+
+.popup-qty-control .qty-btn {
+    background: #7d5ba0;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 45px;
+    height: 45px;
+    cursor: pointer;
+    font-size: 1.5em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    font-weight: bold;
+}
+
+.popup-qty-control .qty-btn:hover:not(:disabled) {
+    background: #000000;
+    transform: scale(1.05);
+}
+
+.popup-qty-control .qty-btn:disabled {
+    background: #ffffff;
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.popup-qty-control .qty-display {
+    font-size: 1.5em;
+    font-weight: bold;
+    min-width: 60px;
+    text-align: center;
+    color: #000000;
+    padding: 0 15px;
+}
+
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>🍽️ Нашето Меню</h1>
+<p>Добре дошли!</p>
+<div class="tabs">
+<button class="tab active" onclick="switchTab('drinks')">🥤 Напитки</button>
+<button class="tab" onclick="switchTab('food')">🍴 Храна</button>
+</div>
+</div>
+<div id="drinks-content" class="content active">
+<div id="drinks-categories">
+<h2 class="section-title">🥤 Изберете категория напитки</h2>
+<div class="category-grid">
+<div class="category-card" onclick="showDrinkCategory('hot')"><div class="category-icon">☕</div><div class="category-name">Топли Напитки</div></div>
+<div class="category-card" onclick="showDrinkCategory('cold')"><div class="category-icon">🥤</div><div class="category-name">Студени Напитки</div></div>
+<div class="category-card" onclick="showDrinkCategory('alcohol')"><div class="category-icon">🍺</div><div class="category-name">Алкохол</div></div>
+<div class="category-card" onclick="showDrinkCategory('fresh')"><div class="category-icon">🍊</div><div class="category-name">Фрешове</div></div>
+<div class="category-card" onclick="showDrinkCategory('cocktails')"><div class="category-icon">🍹</div><div class="category-name">Коктейли</div></div>
+<div class="category-card" onclick="showDrinkCategory('lemonade')"><div class="category-icon">🍋</div><div class="category-name">Домашни Лимонади</div></div>
+</div>
+</div>
+
+<div id="hot-menu" class="hidden">
+<button class="back-button" onclick="backToDrinkCategories()">← Назад</button>
+<h2 class="section-title">☕ Топли Напитки</h2>
+<div class="menu-item" onclick="showPopup('☕','Еспресо','Класическо италианско кафе','2.50','1.28')">
+<span class="item-name">Еспресо</span>
+<span class="item-price">2.50 лв.<span class="price-eur">(€1.28)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('☕','Американо','Разредено еспресо с вода','2.80','1.43')">
+<span class="item-name">Американо</span>
+<span class="item-price">2.80 лв.<span class="price-eur">(€1.43)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('☕','Макиато','Еспресо с капка мляко','3.20','1.64')">
+<span class="item-name">Макиато</span>
+<span class="item-price">3.20 лв.<span class="price-eur">(€1.64)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('☕','Капучино','Еспресо с пенясало мляко','3.50','1.79')">
+<span class="item-name">Капучино</span>
+<span class="item-price">3.50 лв.<span class="price-eur">(€1.79)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('☕','Лате','Нежно кафе с много мляко','4.00','2.05')">
+<span class="item-name">Лате</span>
+<span class="item-price">4.00 лв.<span class="price-eur">(€2.05)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍫','Горещ шоколад','Богат и кремообразен шоколад','4.00','2.05')">
+<span class="item-name">Горещ шоколад</span>
+<span class="item-price">4.00 лв.<span class="price-eur">(€2.05)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('☕','Флат Уайт','Двойно еспресо с микропяна','4.20','2.15')">
+<span class="item-name">Флат Уайт</span>
+<span class="item-price">4.20 лв.<span class="price-eur">(€2.15)</span></span>
+</div>
+<!-- всички топли напитки тук -->
+</div>
+
+<div id="cocktails-menu" class="hidden">
+<button class="back-button" onclick="backToDrinkCategories()">← Назад</button>
+<h2 class="section-title">🍹 Коктейли</h2>
+<div class="menu-item" onclick="showPopup('🍹','Мохито','Ром, мента, лайм, газирана вода','6.50','3.32')">
+<div><div class="item-name">Мохито</div><div class="item-description">Ром, мента, лайм</div></div>
+<span class="item-price">6.50 лв.<span class="price-eur">(€3.32)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍹','Пина Колада','Ром, кокосово мляко, ананас','7.00','3.58')">
+<div><div class="item-name">Пина Колада</div><div class="item-description">Ром, кокос, ананас</div></div>
+<span class="item-price">7.00 лв.<span class="price-eur">(€3.58)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍸','Маргарита','Текила, трипъл сек, лайм','7.50','3.83')">
+<div><div class="item-name">Маргарита</div><div class="item-description">Текила, трипъл сек, лайм</div></div>
+<span class="item-price">7.50 лв.<span class="price-eur">(€3.83)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍹','Дайкири','Ром, лайм, захар','6.80','3.48')">
+<div><div class="item-name">Дайкири</div><div class="item-description">Ром, лайм, захар</div></div>
+<span class="item-price">6.80 лв.<span class="price-eur">(€3.48)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍹','Секс на плажа','Водка, праскова шнапс, сок','7.00','3.58')">
+<div><div class="item-name">Секс на плажа</div><div class="item-description">Водка, праскова, сок</div></div>
+<span class="item-price">7.00 лв.<span class="price-eur">(€3.58)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍸','Космополитан','Водка, трипъл сек, червена боровинка','7.50','3.83')">
+<div><div class="item-name">Космополитан</div><div class="item-description">Водка, трипъл сек</div></div>
+<span class="item-price">7.50 лв.<span class="price-eur">(€3.83)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍹','Безалкохолен Мохито','Лимон, мента, газирана вода','4.50','2.30')">
+<div><div class="item-name">Безалкохолен Мохито</div><div class="item-description">Лимон, мента, газирана</div></div>
+<span class="item-price">4.50 лв.<span class="price-eur">(€2.30)</span></span>
+</div>
+</div>
+
+<div id="cold-menu" class="hidden">
+<button class="back-button" onclick="backToDrinkCategories()">← Назад</button>
+<h2 class="section-title">🥤 Студени Напитки</h2>
+<div class="menu-item" onclick="showPopup('🧃','Студен Чай','Охладен чай с лимон','2.80','1.43')">
+<span class="item-name">Студен Чай</span>
+<span class="item-price">2.80 лв.<span class="price-eur">(€1.43)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍋','Лимонада','Свежа домашна лимонада','3.00','1.53')">
+<span class="item-name">Лимонада</span>
+<span class="item-price">3.00 лв.<span class="price-eur">(€1.53)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('❄️','Фрапе','Студено разбито кафе','3.50','1.79')">
+<span class="item-name">Фрапе</span>
+<span class="item-price">3.50 лв.<span class="price-eur">(€1.79)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🧊','Айс Кафе','Студено кафе с лед','3.80','1.94')">
+<span class="item-name">Айс Кафе</span>
+<span class="item-price">3.80 лв.<span class="price-eur">(€1.94)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥤','Шейк Шоколад','Млечен шейк с шоколад','4.20','2.15')">
+<span class="item-name">Шейк Шоколад</span>
+<span class="item-price">4.20 лв.<span class="price-eur">(€2.15)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥤','Шейк Ягода','Млечен шейк с ягоди','4.20','2.15')">
+<span class="item-name">Шейк Ягода</span>
+<span class="item-price">4.20 лв.<span class="price-eur">(€2.15)</span></span>
+</div>
+
+<div class="menu-item" onclick="showPopup('🍊','Фреш Портокал','Прясно изцеден портокал','4.50','2.30')">
+<span class="item-name">Фреш Портокал</span>
+<span class="item-price">4.50 лв.<span class="price-eur">(€2.30)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍓','Смути Горски Плодове','Смути с ягоди, малини','5.00','2.56')">
+<span class="item-name">Смути Горски Плодове</span>
+<span class="item-price">5.00 лв.<span class="price-eur">(€2.56)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥭','Смути Тропикал','Смути с манго, ананас','5.00','2.56')">
+<span class="item-name">Смути Тропикал</span>
+<span class="item-price">5.00 лв.<span class="price-eur">(€2.56)</span></span>
+</div>
+<!-- всички студени напитки тук -->
+</div>
+<div id="lemonade-menu" class="hidden">
+<button class="back-button" onclick="backToDrinkCategories()">← Назад</button>
+<h2 class="section-title">🍋 Домашни Лимонади</h2>
+<div class="menu-item" onclick="showPopup('🍋','Класическа Лимонада','Лимон, захар, вода','3.50','1.79')">
+<div><div class="item-name">Класическа Лимонада</div><div class="item-description">Лимон, захар, вода</div></div>
+<span class="item-price">3.50 лв.<span class="price-eur">(€1.79)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍓','Ягодова Лимонада','Ягоди, лимон, мента','4.20','2.15')">
+<div><div class="item-name">Ягодова Лимонада</div><div class="item-description">Ягоди, лимон, мента</div></div>
+<span class="item-price">4.20 лв.<span class="price-eur">(€2.15)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🫐','Боровинкова Лимонада','Боровинки, лимон','4.20','2.15')">
+<div><div class="item-name">Боровинкова Лимонада</div><div class="item-description">Боровинки, лимон</div></div>
+<span class="item-price">4.20 лв.<span class="price-eur">(€2.15)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥒','Краставица Лимонада','Краставица, лимон, мента','3.80','1.94')">
+<div><div class="item-name">Краставица Лимонада</div><div class="item-description">Краставица, лимон, мента</div></div>
+<span class="item-price">3.80 лв.<span class="price-eur">(€1.94)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍑','Праскова Лимонада','Праскова, лимон, мед','4.50','2.30')">
+<div><div class="item-name">Праскова Лимонада</div><div class="item-description">Праскова, лимон, мед</div></div>
+<span class="item-price">4.50 лв.<span class="price-eur">(€2.30)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🌺','Лавандулова Лимонада','Лавандула, лимон','4.80','2.45')">
+<div><div class="item-name">Лавандулова Лимонада</div><div class="item-description">Лавандула, лимон</div></div>
+<span class="item-price">4.80 лв.<span class="price-eur">(€2.45)</span></span>
+</div>
+</div>
+
+<div id="fresh-menu" class="hidden">
+<button class="back-button" onclick="backToDrinkCategories()">← Назад</button>
+<h2 class="section-title">🍊 Фрешове</h2>
+<div class="menu-item" onclick="showPopup('🍊','Фреш Портокал','Прясно изцеден портокал','4.50','2.30')">
+<div><div class="item-name">Фреш Портокал</div><div class="item-description">Прясно изцеден</div></div>
+<span class="item-price">4.50 лв.<span class="price-eur">(€2.30)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥕','Фреш Морков','Прясно изцеден морков','4.00','2.05')">
+<div><div class="item-name">Фреш Морков</div><div class="item-description">Прясно изцеден</div></div>
+<span class="item-price">4.00 лв.<span class="price-eur">(€2.05)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍎','Фреш Ябълка','Прясно изцедена ябълка','4.00','2.05')">
+<div><div class="item-name">Фреш Ябълка</div><div class="item-description">Прясно изцедена</div></div>
+<span class="item-price">4.00 лв.<span class="price-eur">(€2.05)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍇','Фреш Грейпфрут','Прясно изцеден грейпфрут','4.80','2.45')">
+<div><div class="item-name">Фреш Грейпфрут</div><div class="item-description">Прясно изцеден</div></div>
+<span class="item-price">4.80 лв.<span class="price-eur">(€2.45)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍊','Фреш Микс','Портокал, ябълка, морков','5.50','2.81')">
+<div><div class="item-name">Фреш Микс</div><div class="item-description">Портокал, ябълка, морков</div></div>
+<span class="item-price">5.50 лв.<span class="price-eur">(€2.81)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥬','Зелен Фреш','Спанак, краставица, ябълка','5.50','2.81')">
+<div><div class="item-name">Зелен Фреш</div><div class="item-description">Спанак, краставица, ябълка</div></div>
+<span class="item-price">5.50 лв.<span class="price-eur">(€2.81)</span></span>
+</div>
+</div>
+
+<div id="alcohol-menu" class="hidden">
+<button class="back-button" onclick="backToDrinkCategories()">← Назад</button>
+<h2 class="section-title">🍺 Алкохол</h2>
+<div class="menu-item" onclick="showPopup('🍺','Бира','Студена бира 500мл','3.50','1.79')">
+<span class="item-name">Бира</span>
+<span class="item-price">3.50 лв.<span class="price-eur">(€1.79)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍷','Вино Червено','Чаша червено вино 150мл','4.00','2.05')">
+<span class="item-name">Вино Червено</span>
+<span class="item-price">4.00 лв.<span class="price-eur">(€2.05)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍷','Вино Бяло','Чаша бяло вино 150мл','4.00','2.05')">
+<span class="item-name">Вино Бяло</span>
+<span class="item-price">4.00 лв.<span class="price-eur">(€2.10)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥃','Уиски','Уиски 50мл','5.00','2.56')">
+<span class="item-name">Уиски</span>
+<span class="item-price">5.00 лв.<span class="price-eur">(€2.56)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍸','Водка','Водка 50мл','4.50','2.30')">
+<span class="item-name">Водка</span>
+<span class="item-price">4.50 лв.<span class="price-eur">(€2.30)</span></span>
+</div>
+
+
+
+<!-- всички алкохолни напитки тук -->
+</div>
+</div>
+<div id="food-content" class="content">
+<div id="food-categories">
+<h2 class="section-title">🍴 Изберете категория</h2>
+<div class="category-grid">
+<div class="category-card" onclick="showCategory('appetizers')"><div class="category-icon">🥟</div><div class="category-name">Предястия</div></div>
+<div class="category-card" onclick="showCategory('mains')"><div class="category-icon">🍖</div><div class="category-name">Ястия</div></div>
+<div class="category-card" onclick="showCategory('pizza')"><div class="category-icon">🍕</div><div class="category-name">Пици</div></div>
+<div class="category-card" onclick="showCategory('burgers')"><div class="category-icon">🍔</div><div class="category-name">Бъргери</div></div>
+<div class="category-card" onclick="showCategory('salads')"><div class="category-icon">🥗</div><div class="category-name">Салати</div></div>
+<div class="category-card" onclick="showCategory('pasta')"><div class="category-icon">🍝</div><div class="category-name">Паста</div></div>
+<div class="category-card" onclick="showCategory('sushi')"><div class="category-icon">🍣</div><div class="category-name">Суши</div></div>
+<div class="category-card" onclick="showCategory('desserts')"><div class="category-icon">🍰</div><div class="category-name">Десерти</div></div>
+</div>
+</div>
+
+<div id="appetizers-menu" class="hidden">
+<button class="back-button" onclick="backToCategories()">← Назад</button>
+<h2 class="section-title">🥟 Предястия</h2>
+<div class="menu-item" onclick="showPopup('🧀','Пържено сирене','Панирано сирене','6.00','3.07','appetizers')">
+<div><div class="item-name">Пържено сирене</div><div class="item-description">Панирано сирене</div></div>
+<span class="item-price">6.00 лв.<span class="price-eur">(€3.07)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥖','Брускети','4бр с домати, босилек','7.50','3.83','appetizers')">
+<div><div class="item-name">Брускети</div><div class="item-description">4бр с домати</div></div>
+<span class="item-price">7.50 лв.<span class="price-eur">(€3.83)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥟','Пилешки крилца','10бр пикантни крилца','8.50','4.35','appetizers')">
+<div><div class="item-name">Пилешки крилца</div><div class="item-description">10бр пикантни крилца</div></div>
+<span class="item-price">8.50 лв.<span class="price-eur">(€4.35)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍤','Скариди темпура','8бр скариди в хрупкава коричка','12.00','6.14','appetizers')">
+<div><div class="item-name">Скариди темпура</div><div class="item-description">8бр скариди</div></div>
+<span class="item-price">12.00 лв.<span class="price-eur">(€6.14)</span></span>
+</div>
+</div>
+
+<div id="mains-menu" class="hidden">
+<button class="back-button" onclick="backToCategories()">← Назад</button>
+<h2 class="section-title">🍖 Ястия</h2>
+<div class="menu-item" onclick="showPopup('🍗','Пилешко филе','На скара','12.00','6.14','mains')">
+<div><div class="item-name">Пилешко филе</div><div class="item-description">На скара</div></div>
+<span class="item-price">12.00 лв.<span class="price-eur">(€6.14)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍖','Свински котлет','Сочен котлет с гарнитура','14.00','7.16','mains')">
+<div><div class="item-name">Свински котлет</div><div class="item-description">С гарнитура</div></div>
+<span class="item-price">14.00 лв.<span class="price-eur">(€7.16)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🐟','Сьомга на скара','Прясна сьомга с лимон','16.00','8.18','mains')">
+<div><div class="item-name">Сьомга на скара</div><div class="item-description">Прясна сьомга</div></div>
+<span class="item-price">16.00 лв.<span class="price-eur">(€8.18)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥩','Телешки стек','Сочен стек 250гр','18.00','9.20','mains')">
+<div><div class="item-name">Телешки стек</div><div class="item-description">250гр</div></div>
+<span class="item-price">18.00 лв.<span class="price-eur">(€9.20)</span></span>
+</div>
+</div>
+
+<div id="pizza-menu" class="hidden">
+<button class="back-button" onclick="backToCategories()">← Назад</button>
+<h2 class="section-title">🍕 Пици</h2>
+<div class="menu-item" onclick="showPopup('🍕','Маргарита','Доматен сос, моцарела','8.50','4.35','pizza')">
+<div><div class="item-name">Маргарита</div><div class="item-description">Доматен сос, моцарела</div></div>
+<span class="item-price">8.50 лв.<span class="price-eur">(€4.35)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍕','Вегетарианска','Чушки, гъби, маслини','9.50','4.86','pizza')">
+<div><div class="item-name">Вегетарианска</div><div class="item-description">Чушки, гъби, маслини</div></div>
+<span class="item-price">9.50 лв.<span class="price-eur">(€4.86)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍕','Пеперони','Доматен сос, пеперони','10.00','5.11','pizza')">
+<div><div class="item-name">Пеперони</div><div class="item-description">Доматен сос, пеперони</div></div>
+<span class="item-price">10.00 лв.<span class="price-eur">(€5.11)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍕','Хавайска','Шунка, ананас','10.50','5.37','pizza')">
+<div><div class="item-name">Хавайска</div><div class="item-description">Шунка, ананас</div></div>
+<span class="item-price">10.50 лв.<span class="price-eur">(€5.37)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍕','Капричоза','Доматен сос, шунка, гъби','11.00','5.62','pizza')">
+<div><div class="item-name">Капричоза</div><div class="item-description">Доматен сос, шунка, гъби</div></div>
+<span class="item-price">11.00 лв.<span class="price-eur">(€5.62)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍕','Диабола','Пикантен салам, халапеньо','11.00','5.62','pizza')">
+<div><div class="item-name">Диабола</div><div class="item-description">Пикантен салам</div></div>
+<span class="item-price">11.00 лв.<span class="price-eur">(€5.62)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍕','Барбекю Пилешка','BBQ сос, пилешко','11.50','5.88','pizza')">
+<div><div class="item-name">Барбекю Пилешка</div><div class="item-description">BBQ сос, пилешко</div></div>
+<span class="item-price">11.50 лв.<span class="price-eur">(€5.88)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍕','Куатро Формаджи','4 вида сирена','12.50','6.39','pizza')">
+<div><div class="item-name">Куатро Формаджи</div><div class="item-description">4 вида сирена</div></div>
+<span class="item-price">12.50 лв.<span class="price-eur">(€6.39)</span></span>
+</div>
+</div>
+
+<div id="burgers-menu" class="hidden">
+<button class="back-button" onclick="backToCategories()">← Назад</button>
+<h2 class="section-title">🍔 Бъргери</h2>
+<div class="menu-item" onclick="showPopup('🍗','Пилешки','Пилешко филе, айсберг','9.00','4.60','burgers')">
+<div><div class="item-name">Пилешки</div><div class="item-description">Пилешко филе</div></div>
+<span class="item-price">9.00 лв.<span class="price-eur">(€4.60)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍔','Класически','Телешка кайма, айсберг','9.50','4.86','burgers')">
+<div><div class="item-name">Класически</div><div class="item-description">Телешка кайма, айсберг</div></div>
+<span class="item-price">9.50 лв.<span class="price-eur">(€4.90)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥬','Вегетариански','Соев бургер, авокадо','9.50','4.86','burgers')">
+<div><div class="item-name">Вегетариански</div><div class="item-description">Соев бургер</div></div>
+<span class="item-price">9.50 лв.<span class="price-eur">(€4.90)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍔','Чийзбургер','Телешка кайма, чедър','10.50','5.37','burgers')">
+<div><div class="item-name">Чийзбургер</div><div class="item-description">Телешка кайма, чедър</div></div>
+<span class="item-price">10.50 лв.<span class="price-eur">(€5.40)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍔','Мексикански','Гуакамоле, халапеньо','11.50','5.88','burgers')">
+<div><div class="item-name">Мексикански</div><div class="item-description">Гуакамоле</div></div>
+<span class="item-price">11.50 лв.<span class="price-eur">(€5.90)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍔','Бекон Бургер','Телешка кайма, бекон','12.00','6.14','burgers')">
+<div><div class="item-name">Бекон Бургер</div><div class="item-description">Телешка кайма, бекон</div></div>
+<span class="item-price">12.00 лв.<span class="price-eur">(€6.10)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍔','Мега Бургер','Двойна кайма, бекон','14.00','7.16','burgers')">
+<div><div class="item-name">Мега Бургер</div><div class="item-description">Двойна кайма</div></div>
+<span class="item-price">14.00 лв.<span class="price-eur">(€7.20)</span></span>
+</div>
+</div>
+
+<div id="salads-menu" class="hidden">
+<button class="back-button" onclick="backToCategories()">← Назад</button>
+<h2 class="section-title">🥗 Салати</h2>
+<div class="menu-item" onclick="showPopup('🥗','Шопска','Домати, краставици, сирене','6.50','3.32','salads')">
+<div><div class="item-name">Шопска</div><div class="item-description">Домати, краставици, сирене</div></div>
+<span class="item-price">6.50 лв.<span class="price-eur">(€3.30)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥗','Цезар','Айсберг, пилешко, пармезан','8.50','4.35','salads')">
+<div><div class="item-name">Цезар</div><div class="item-description">Айсберг, пилешко</div></div>
+<span class="item-price">8.50 лв.<span class="price-eur">(€4.60)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥗','Гръцка','Домати, краставици, фета','7.00','3.58','salads')">
+<div><div class="item-name">Гръцка</div><div class="item-description">Домати, фета</div></div>
+<span class="item-price">7.00 лв.<span class="price-eur">(€3.60)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥗','Капрезе','Домати, моцарела, босилек','7.50','3.83','salads')">
+<div><div class="item-name">Капрезе</div><div class="item-description">Домати, моцарела</div></div>
+<span class="item-price">7.50 лв.<span class="price-eur">(€3.90)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥗','Нисоаз','Тон, яйца, домати','9.00','4.60','salads')">
+<div><div class="item-name">Нисоаз</div><div class="item-description">Тон, яйца</div></div>
+<span class="item-price">9.00 лв.<span class="price-eur">(€4.60)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥗','Руска','Картофи, моркови, грах','5.50','2.81','salads')">
+<div><div class="item-name">Руска</div><div class="item-description">Картофи, моркови</div></div>
+<span class="item-price">5.50 лв.<span class="price-eur">(€2.80)</span></span>
+</div>
+</div>
+
+<div id="pasta-menu" class="hidden">
+<button class="back-button" onclick="backToCategories()">← Назад</button>
+<h2 class="section-title">🍝 Паста</h2>
+<div class="menu-item" onclick="showPopup('🍝','Песто','Спагети, босилек песто','8.00','4.09','pasta')">
+<div><div class="item-name">Песто</div><div class="item-description">Босилек песто</div></div>
+<span class="item-price">8.00 лв.<span class="price-eur">(€4.10)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍝','Болонезе','Спагети, телешка кайма','8.50','4.35','pasta')">
+<div><div class="item-name">Болонезе</div><div class="item-description">Спагети, кайма</div></div>
+<span class="item-price">8.50 лв.<span class="price-eur">(€4.40)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍝','Аматричана','Спагети, бекон, домати','8.50','4.35','pasta')">
+<div><div class="item-name">Аматричана</div><div class="item-description">Бекон, домати</div></div>
+<span class="item-price">8.50 лв.<span class="price-eur">(€4.40)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍝','Карбонара','Спагети, бекон, яйце','9.00','4.60','pasta')">
+<div><div class="item-name">Карбонара</div><div class="item-description">Спагети, бекон, яйце</div></div>
+<span class="item-price">9.00 лв.<span class="price-eur">(€4.60)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍝','Куатро Формаджи','Пене, 4 вида сирена','10.00','5.11','pasta')">
+<div><div class="item-name">Куатро Формаджи</div><div class="item-description">4 вида сирена</div></div>
+<span class="item-price">10.00 лв.<span class="price-eur">(€5.10)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍝','Морски дарове','Спагети, скариди, миди','12.00','6.14','pasta')">
+<div><div class="item-name">Морски дарове</div><div class="item-description">Скариди, миди</div></div>
+<span class="item-price">12.00 лв.<span class="price-eur">(€6.20)</span></span>
+</div>
+</div>
+
+<div id="sushi-menu" class="hidden">
+<button class="back-button" onclick="backToCategories()">← Назад</button>
+<h2 class="section-title">🍣 Суши</h2>
+<div class="menu-item" onclick="showPopup('🍣','Нигири Сьомга','Сьомга върху ориз - 2бр','5.00','2.56','sushi')">
+<div><div class="item-name">Нигири Сьомга</div><div class="item-description">2бр</div></div>
+<span class="item-price">5.00 лв.<span class="price-eur">(€2.60)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍣','Калифорния','Раци, авокадо - 8бр','9.50','4.86','sushi')">
+<div><div class="item-name">Калифорния</div><div class="item-description">Раци, авокадо - 8бр</div></div>
+<span class="item-price">9.50 лв.<span class="price-eur">(€4.90)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍣','Спайси Туна','Риба тон, пикантен сос - 8бр','10.50','5.37','sushi')">
+<div><div class="item-name">Спайси Туна</div><div class="item-description">Тон - 8бр</div></div>
+<span class="item-price">10.50 лв.<span class="price-eur">(€5.40)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍣','Филаделфия','Сьомга, крема сирене - 8бр','11.00','5.62','sushi')">
+<div><div class="item-name">Филаделфия</div><div class="item-description">Сьомга - 8бр</div></div>
+<span class="item-price">11.00 лв.<span class="price-eur">(€5.60)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍣','Дракон','Скариди темпура - 8бр','12.00','6.14','sushi')">
+<div><div class="item-name">Дракон</div><div class="item-description">Скариди - 8бр</div></div>
+<span class="item-price">12.00 лв.<span class="price-eur">(€6.20)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍣','Сашими Микс','Сьомга, тон, моркови - 9бр','13.00','6.65','sushi')">
+<div><div class="item-name">Сашими Микс</div><div class="item-description">9бр</div></div>
+<span class="item-price">13.00 лв.<span class="price-eur">(€6.70)</span></span>
+</div>
+</div>
+
+<div id="desserts-menu" class="hidden">
+<button class="back-button" onclick="backToCategories()">← Назад</button>
+<h2 class="section-title">🍰 Десерти</h2>
+<div class="menu-item" onclick="showPopup('🍰','Баклава','Традиционна баклава','4.00','2.05','desserts')">
+<div><div class="item-name">Баклава</div><div class="item-description">Традиционна</div></div>
+<span class="item-price">4.00 лв.<span class="price-eur">(€2.00)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍨','Сладолед','3 топки по избор','4.50','2.30','desserts')">
+<div><div class="item-name">Сладолед</div><div class="item-description">3 топки</div></div>
+<span class="item-price">4.50 лв.<span class="price-eur">(€2.30)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍮','Крем Карамел','Класически френски десерт','5.00','2.56','desserts')">
+<div><div class="item-name">Крем Карамел</div><div class="item-description">Класически десерт</div></div>
+<span class="item-price">5.00 лв.<span class="price-eur">(€2.60)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🥞','Палачинки','3 палачинки с нутела','5.50','2.81','desserts')">
+<div><div class="item-name">Палачинки</div><div class="item-description">С нутела</div></div>
+<span class="item-price">5.50 лв.<span class="price-eur">(€2.80)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍰','Чийзкейк','С горски плодове','6.50','3.32','desserts')">
+<div><div class="item-name">Чийзкейк</div><div class="item-description">С горски плодове</div></div>
+<span class="item-price">6.50 лв.<span class="price-eur">(€3.20)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍰','Тирамису','Италиански десерт','6.50','3.32','desserts')">
+<div><div class="item-name">Тирамису</div><div class="item-description">Италиански</div></div>
+<span class="item-price">6.50 лв.<span class="price-eur">(€3.20)</span></span>
+</div>
+<div class="menu-item" onclick="showPopup('🍰','Шоколадова торта','Многослойна торта','7.00','3.58','desserts')">
+<div><div class="item-name">Шоколадова торта</div><div class="item-description">Многослойна</div></div>
+<span class="item-price">7.00 лв.<span class="price-eur">(€3.60)</span></span>
+</div>
+</div>
+
+</div>
+</div>
+<button class="cart-button" onclick="openCart()">🛒<span class="cart-badge" id="cartBadge">0</span></button>
+<button class="waiter-button" onclick="callWaiter()">🔔</button>
+<audio id="dingSound" src="https://assets.mixkit.co/sfx/preview/mixkit-bell-notification-933.mp3"></audio>
+
+<div class="popup-overlay" id="popup" onclick="closePopup()">
+<div class="popup" onclick="event.stopPropagation()">
+<span class="popup-close" onclick="closePopup()">×</span>
+<div class="popup-icon" id="pIcon"></div>
+<div class="popup-title" id="pTitle"></div>
+<div class="popup-description" id="pDesc"></div>
+<div class="popup-price" id="pPrice"></div>
+<div class="extras-section" id="extrasSection" style="display:none">
+<div class="extras-title"></div>
+<div id="extrasList"></div>
+<div class="total-section">
+<span class="total-label"></span>
+<span class="total-price" id="totalPrice"></span>
+</div>
+<button class="add-to-order-btn" onclick="addToOrder()">Добави</button>
+</div>
+</div>
+</div>
+
+<div class="popup-overlay" id="cartPopup" onclick="closeCart()">
+<div class="popup" onclick="event.stopPropagation()">
+<span class="popup-close" onclick="closeCart()">×</span>
+<div class="popup-title">🛒 Вашата количка</div>
+<div id="cartItems"></div>
+<div class="cart-total" id="cartTotal" style="display:none">
+<span class="cart-total-label">Обща сума:</span>
+<span class="cart-total-price" id="cartTotalPrice">0.00 лв.</span>
+</div>
+<button class="finish-order-btn" id="finishBtn" style="display:none" onclick="finishOrder()">Завърши поръчката</button>
+</div>
+</div>
+<!-- Custom Waiter Popup -->
+<div class="popup-overlay" id="waiterPopup">
+    <div class="popup" onclick="event.stopPropagation()">
+        <span class="popup-title" style="font-size:1.6em; text-align:left;">Маса 1 извиках те сервитьора.</span>
+        <p style="margin-top:15px; font-size:1.1em; text-align:left; color:#444;">
+        Благодарим ви много!!!<br>
+        Сервитьорът ще дойде след малко при вас.
+        </p>
+        <button onclick="closeWaiter()" style="
+           margin-top:20px;
+    width:100%;
+    padding:12px;
+    background:#6b4d8a;
+    color:white;
+    border:none;
+    border-radius:10px;
+    font-size:1.1em;
+    cursor:pointer;">
+            OK
+        </button>
+    </div>
+</div>
+<!-- Custom Order Popup -->
+<div class="popup-overlay" id="orderPopup">
+    <div class="popup" onclick="event.stopPropagation()">
+        <span class="popup-title" style="font-size:1.6em; text-align:center-right;"> 🎉 Поръчката е приета!</span>
+        <p id="orderSummary" style="margin-top:15px; font-size:1.1em; text-align:center; color:#444;"></p>
+
+        <button onclick="closeOrderPopup()" style="
+            margin-top:20px;
+            width:100%;
+            padding:12px;
+            background:#6b4d8a;
+            color:rgb(255, 255, 255);
+            border:none;
+            border-radius:10px;
+            font-size:1.1em;
+            cursor:pointer;">
+            OK
+        </button>
+    </div>
+</div>
+
+<script>
+    function switchTab(tab){
+document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+event.target.classList.add('active');
+document.getElementById(tab+'-content').classList.add('active');
+if(tab==='food')backToCategories();
+if(tab==='drinks')backToDrinkCategories();
+}
+
+function showDrinkCategory(cat){
+document.getElementById('drinks-categories').classList.add('hidden');
+document.getElementById(cat+'-menu').classList.remove('hidden');
+}
+
+function backToDrinkCategories(){
+document.getElementById('drinks-categories').classList.remove('hidden');
+['hot','cold','alcohol','fresh','cocktails','lemonade'].forEach(c=>{
+const el=document.getElementById(c+'-menu');
+if(el)el.classList.add('hidden');
+});
+}
+</script>
+<script>
+    let cart=[],basePrice=0,basePriceEur=0,category='',currentItem='';
+const extras={
+pizza:[{name:'Екстра сирене',price:2,priceEur:1.02},{name:'Бекон',price:2,priceEur:1.02},{name:'Гъби',price:1.5,priceEur:0.77},{name:'Маслини',price:1,priceEur:0.51},{name:'Пеперони',price:2,priceEur:1.02}],
+burgers:[{name:'Екстра кайма',price:3,priceEur:1.53},{name:'Бекон',price:2,priceEur:1.02},{name:'Чедър',price:1.5,priceEur:0.77},{name:'Яйце',price:1.5,priceEur:0.77},{name:'Халапеньо',price:1,priceEur:0.51},{name:'Авокадо',price:2.5,priceEur:1.28}],
+salads:[{name:'Екстра сирене',price:2,priceEur:1.02},{name:'Пилешко филе',price:3,priceEur:1.53},{name:'Тунак',price:2.5,priceEur:1.28},{name:'Авокадо',price:2.5,priceEur:1.28},{name:'Крутони',price:1,priceEur:0.51}],
+pasta:[{name:'Екстра пармезан',price:2,priceEur:1.02},{name:'Бекон',price:2,priceEur:1.02},{name:'Гъби',price:1.5,priceEur:0.77},{name:'Скариди',price:4,priceEur:2.05},{name:'Пилешко',price:3,priceEur:1.53}],
+sushi:[{name:'Соев сос',price:0.5,priceEur:0.26},{name:'Васаби',price:0.5,priceEur:0.26},{name:'Джинджифил',price:0.5,priceEur:0.26},{name:'Екстра авокадо',price:2,priceEur:1.02}],
+desserts:[{name:'Бита сметана',price:1.5,priceEur:0.77},{name:'Горски плодове',price:2,priceEur:1.02},{name:'Течен шоколад',price:1.5,priceEur:0.77},{name:'Екстра сладолед',price:2,priceEur:1.02}],
+appetizers:[{name:'Екстра сос',price:1,priceEur:0.51},{name:'Пикантен сос',price:1,priceEur:0.51}],
+mains:[{name:'Допълнителна гарнитура',price:3,priceEur:1.53},{name:'Печени картофи',price:2.5,priceEur:1.28},{name:'Ориз',price:2,priceEur:1.02},{name:'Зеленчуци на грил',price:3,priceEur:1.53}]
+};
+
+function switchTab(tab){
+document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+document.querySelectorAll('.content').forEach(c=>c.classList.remove('active'));
+event.target.classList.add('active');
+document.getElementById(tab+'-content').classList.add('active');
+if(tab==='food')backToCategories();
+if(tab==='drinks')backToDrinkCategories();
+}
+
+function showDrinkCategory(cat){
+document.getElementById('drinks-categories').classList.add('hidden');
+document.getElementById(cat+'-menu').classList.remove('hidden');
+}
+
+function backToDrinkCategories(){
+document.getElementById('drinks-categories').classList.remove('hidden');
+['hot','cold','alcohol','fresh','cocktails','lemonade'].forEach(c=>{
+const el=document.getElementById(c+'-menu');
+if(el)el.classList.add('hidden');
+});
+}
+
+function showCategory(cat){
+document.getElementById('food-categories').classList.add('hidden');
+document.getElementById(cat+'-menu').classList.remove('hidden');
+}
+
+function backToCategories(){
+document.getElementById('food-categories').classList.remove('hidden');
+['pizza','burgers','salads','pasta','sushi','desserts','appetizers','mains'].forEach(c=>{
+const el=document.getElementById(c+'-menu');
+if(el)el.classList.add('hidden');
+});
+}
+
+function showPopup(icon,title,desc,price,priceEur,cat){
+basePrice=parseFloat(price);
+basePriceEur=parseFloat(priceEur);
+category=cat||'';
+currentItem={icon,title,desc,price:basePrice,priceEur:basePriceEur,popupQty:1};
+
+document.getElementById('pIcon').textContent=icon;
+document.getElementById('pTitle').textContent=title;
+document.getElementById('pDesc').textContent=desc;
+document.getElementById('pPrice').textContent=price+' лв.';
+
+const extrasSection=document.getElementById('extrasSection');
+const extrasList=document.getElementById('extrasList');
+
+// Премахни стари qty контроли ако има
+const oldQtyControl = extrasSection.querySelector('.popup-qty-control');
+if(oldQtyControl) oldQtyControl.remove();
+
+if(cat && extras[cat]){
+extrasSection.style.display='block';
+extrasList.innerHTML='';
+extras[cat].forEach((extra,index)=>{
+const div=document.createElement('div');
+div.className='extra-item';
+div.innerHTML=`<input type="checkbox" id="extra${index}" onchange="calculateTotal()">
+<label for="extra${index}" class="extra-name">${extra.name}</label>
+<span class="extra-price">+${extra.price.toFixed(2)} лв.</span>`;
+extrasList.appendChild(div);
+});
+calculateTotal();
+}else{
+extrasSection.style.display='block';
+extrasList.innerHTML='<p style="text-align:center;color:#666;padding:10px">Без добавки</p>';
+document.getElementById('totalPrice').textContent=basePrice.toFixed(2)+' лв. (€'+basePriceEur.toFixed(2)+')';
+}
+
+// Добави qty контролите преди бутона "Добави"
+const qtyControl = document.createElement('div');
+qtyControl.className = 'popup-qty-control';
+qtyControl.innerHTML = `
+<button class="qty-btn" onclick="decreasePopupQty()" id="popupMinusBtn">−</button>
+<span class="qty-display" id="popupQty">1</span>
+<button class="qty-btn" onclick="increasePopupQty()">+</button>
+`;
+
+const addBtn = extrasSection.querySelector('.add-to-order-btn');
+extrasSection.insertBefore(qtyControl, addBtn);
+updateMinusBtn();
+
+document.getElementById('popup').classList.add('active');
+}
+
+function calculateTotal(){
+let total=basePrice,totalEur=basePriceEur;
+if(category && extras[category]){
+extras[category].forEach((extra,index)=>{
+const cb=document.getElementById('extra'+index);
+if(cb && cb.checked){
+total+=extra.price;
+totalEur+=extra.priceEur;
+}
+});
+}
+const qty = currentItem.popupQty || 1;
+total *= qty;
+totalEur *= qty;
+document.getElementById('totalPrice').textContent=total.toFixed(2)+' лв. (€'+totalEur.toFixed(2)+')';
+}
+
+function increasePopupQty(){
+if(!currentItem.popupQty) currentItem.popupQty = 1;
+currentItem.popupQty++;
+document.getElementById('popupQty').textContent = currentItem.popupQty;
+calculateTotal();
+updateMinusBtn();
+}
+
+function decreasePopupQty(){
+if(!currentItem.popupQty) currentItem.popupQty = 1;
+if(currentItem.popupQty > 1){
+currentItem.popupQty--;
+document.getElementById('popupQty').textContent = currentItem.popupQty;
+calculateTotal();
+updateMinusBtn();
+}
+}
+
+function updateMinusBtn(){
+const btn = document.getElementById('popupMinusBtn');
+if(btn){
+if(currentItem.popupQty <= 1){
+btn.disabled = true;
+}else{
+btn.disabled = false;
+}
+}
+}
+
+function addToOrder(){
+const selectedExtras=[];
+if(category && extras[category]){
+extras[category].forEach((extra,index)=>{
+if(document.getElementById('extra'+index).checked){
+selectedExtras.push(extra);
+}
+});
+}
+let totalPrice=basePrice,totalPriceEur=basePriceEur;
+selectedExtras.forEach(e=>{
+totalPrice+=e.price;
+totalPriceEur+=e.priceEur;
+});
+
+const qty = currentItem.popupQty || 1;
+
+cart.push({
+...currentItem,
+extras:selectedExtras,
+totalPrice,
+totalPriceEur,
+quantity: qty
+});
+updateCartBadge();
+closePopup();
+}
+
+function updateCartBadge(){
+document.getElementById('cartBadge').textContent=cart.length;
+}
+
+function openCart(){
+const cartItems=document.getElementById('cartItems');
+if(cart.length===0){
+cartItems.innerHTML='<div class="cart-empty">Количката е празна 🛒</div>';
+document.getElementById('cartTotal').style.display='none';
+document.getElementById('finishBtn').style.display='none';
+}else{
+cartItems.innerHTML='';
+let grandTotal=0,grandTotalEur=0;
+cart.forEach((item,index)=>{
+if(!item.quantity) item.quantity = 1;
+grandTotal+=item.totalPrice * item.quantity;
+grandTotalEur+=item.totalPriceEur * item.quantity;
+const extrasText=item.extras.map(e=>e.name).join(', ');
+const div=document.createElement('div');
+div.className='cart-item';
+div.innerHTML=`<div class="cart-item-info">
+<div class="cart-item-name">${item.icon} ${item.title}</div>
+${extrasText?`<div class="cart-item-extras">Екстри: ${extrasText}</div>`:''}
+<div class="cart-item-price">${item.totalPrice.toFixed(2)} лв. × ${item.quantity} = ${(item.totalPrice * item.quantity).toFixed(2)} лв.</div>
+</div>
+<div class="cart-item-controls">
+<button class="qty-btn" onclick="decreaseQty(${index})" ${item.quantity <= 1 ? 'disabled' : ''}>−</button>
+<span class="qty-display">${item.quantity}</span>
+<button class="qty-btn" onclick="increaseQty(${index})">+</button>
+<button class="cart-item-remove" onclick="removeFromCart(${index})">×</button>
+</div>`;
+cartItems.appendChild(div);
+});
+document.getElementById('cartTotalPrice').textContent=grandTotal.toFixed(2)+' лв. (€'+grandTotalEur.toFixed(2)+')';
+document.getElementById('cartTotal').style.display='flex';
+document.getElementById('finishBtn').style.display='block';
+}
+document.getElementById('cartPopup').classList.add('active');
+}
+
+function increaseQty(index){
+if(!cart[index].quantity) cart[index].quantity = 1;
+cart[index].quantity++;
+openCart();
+}
+
+function decreaseQty(index){
+if(!cart[index].quantity) cart[index].quantity = 1;
+if(cart[index].quantity > 1){
+cart[index].quantity--;
+openCart();
+}
+}
+
+function closeCart(){
+document.getElementById('cartPopup').classList.remove('active');
+}
+
+function closeOrderPopup() {
+document.getElementById("orderPopup").classList.remove("active");
+}
+
+function removeFromCart(index){
+cart.splice(index,1);
+updateCartBadge();
+openCart();
+}
+
+function finishOrder() {
+if (cart.length === 0) return;
+
+let total = 0;
+let totalEur = 0;
+
+cart.forEach(item => {
+if(!item.quantity) item.quantity = 1;
+total += item.totalPrice * item.quantity;
+totalEur += item.totalPriceEur * item.quantity;
+});
+
+document.getElementById("orderSummary").innerHTML = `
+<strong>Обща сума:</strong> ${total.toFixed(2)} лв. 
+(€${totalEur.toFixed(2)})<br><br>
+Благодарим ви!
+`;
+
+document.getElementById("orderPopup").classList.add("active");
+
+cart = [];
+updateCartBadge();
+closeCart();
+}
+
+function callWaiter() {
+const ding = document.getElementById("dingSound");
+ding.currentTime = 0;
+ding.play();
+
+document.getElementById("waiterPopup").classList.add("active");
+}
+
+function closeWaiter() {
+document.getElementById("waiterPopup").classList.remove("active");
+}
+
+function closePopup(){
+document.getElementById('popup').classList.remove('active');
+}
+
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closePopup();closeCart()}});
+</script>
+</body>
+</html>
