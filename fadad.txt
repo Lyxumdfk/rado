@@ -1,0 +1,265 @@
+#include <WiFi.h>
+#include <WebServer.h>
+#include <SPI.h>
+#include <MFRC522.h>
+#include <Keypad.h>
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <ArduinoJson.h>
+
+#define SS_PIN 5
+#define RST_PIN 4
+
+MFRC522 rfid(SS_PIN, RST_PIN);
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+WebServer server(80);
+
+const char* ssid = "Flexi Bar";
+const char* password = "flexi1234";
+
+String paymentStatus = "idle";
+float paymentAmount = 0;
+String enteredPin = "";
+
+String validUid = "A1514166";
+String validPin = "431";
+
+bool waitingForCard = false;
+bool waitingForPin = false;
+
+char keys[4][3] = {
+  {'1','2','3'},
+  {'4','5','6'},
+  {'7','8','9'},
+  {'*','0','#'}
+};
+
+byte rowPins[4] = {13, 12, 14, 27};
+byte colPins[3] = {26, 25, 33};
+
+Keypad keypad = Keypad(makeKeymap(keys), rowPins, colPins, 4, 3);
+
+void showReady() {
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("FLEXI POS");
+  lcd.setCursor(0, 1);
+  lcd.print("READY");
+}
+
+void handleStartPayment() {
+  if (server.method() != HTTP_POST) {
+    server.send(405, "text/plain", "Only POST");
+    return;
+  }
+
+  DynamicJsonDocument doc(256);
+  DeserializationError error = deserializeJson(doc, server.arg("plain"));
+
+  if (error) {
+    server.send(400, "application/json", "{\"success\":false}");
+    return;
+  }
+
+  paymentAmount = doc["amount"] | 0.0;
+
+  paymentStatus = "waiting_card";
+  waitingForCard = true;
+  waitingForPin = false;
+  enteredPin = "";
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("SUMA:");
+  lcd.print(paymentAmount, 2);
+
+  lcd.setCursor(0, 1);
+  lcd.print("SCAN CARD");
+
+  server.send(200, "application/json", "{\"success\":true}");
+}
+
+void handlePaymentStatus() {
+  String response = "{\"status\":\"" + paymentStatus + "\"}";
+  server.send(200, "application/json", response);
+}
+
+void handleCancelPayment() {
+  paymentStatus = "cancelled";
+  waitingForCard = false;
+  waitingForPin = false;
+  enteredPin = "";
+
+  showReady();
+
+  server.send(200, "application/json", "{\"success\":true}");
+}
+
+String readCardUid() {
+  String uid = "";
+
+  for (byte i = 0; i < rfid.uid.size; i++) {
+    if (rfid.uid.uidByte[i] < 0x10) {
+      uid += "0";
+    }
+
+    uid += String(rfid.uid.uidByte[i], HEX);
+  }
+
+  uid.toUpperCase();
+  return uid;
+}
+
+void setup() {
+  Serial.begin(115200);
+
+  SPI.begin();
+  rfid.PCD_Init();
+
+  Wire.begin(21, 22);
+
+  lcd.init();
+  lcd.backlight();
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("CONNECT WIFI");
+
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.print(".");
+  }
+
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("IP:");
+
+  lcd.setCursor(0, 1);
+  lcd.print(WiFi.localIP());
+
+  Serial.println();
+  Serial.print("ESP32 IP: ");
+  Serial.println(WiFi.localIP());
+
+  delay(3000);
+
+  showReady();
+
+  server.on("/start-payment", HTTP_POST, handleStartPayment);
+  server.on("/payment-status", HTTP_GET, handlePaymentStatus);
+  server.on("/cancel-payment", HTTP_POST, handleCancelPayment);
+
+  server.begin();
+}
+
+void loop() {
+  server.handleClient();
+
+  if (waitingForCard) {
+
+    if (rfid.PICC_IsNewCardPresent() && rfid.PICC_ReadCardSerial()) {
+
+      String uid = readCardUid();
+
+      Serial.print("CARD UID: ");
+      Serial.println(uid);
+
+      rfid.PICC_HaltA();
+      rfid.PCD_StopCrypto1();
+
+      if (uid == validUid) {
+
+        waitingForCard = false;
+        waitingForPin = true;
+
+        paymentStatus = "waiting_pin";
+
+        enteredPin = "";
+
+        lcd.clear();
+
+        lcd.setCursor(0, 0);
+        lcd.print("ENTER PIN:");
+
+        lcd.setCursor(0, 1);
+
+      } else {
+
+        paymentStatus = "denied";
+        waitingForCard = false;
+
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("INVALID CARD");
+
+        delay(2500);
+
+        showReady();
+      }
+    }
+  }
+
+  if (waitingForPin) {
+
+    char key = keypad.getKey();
+
+    if (key) {
+      Serial.print("KEY: ");
+      Serial.println(key);
+      if (key >= '0' && key <= '9') {
+
+        if (enteredPin.length() < 8) {
+
+          enteredPin += key;
+
+          lcd.setCursor(enteredPin.length() - 1, 1);
+          lcd.print("*");
+        }
+      }
+
+      if (key == '*') {
+
+        enteredPin = "";
+
+        lcd.setCursor(0, 1);
+        lcd.print("                ");
+
+        lcd.setCursor(0, 1);
+      }
+
+      if (key == '#') {
+
+        waitingForPin = false;
+
+        if (enteredPin == validPin) {
+
+          paymentStatus = "approved";
+
+          lcd.clear();
+
+          lcd.setCursor(0, 0);
+          lcd.print("PAYMENT OK");
+
+          lcd.setCursor(0, 1);
+          lcd.print(paymentAmount, 2);
+          lcd.print(" evro");
+
+        } else {
+
+          paymentStatus = "denied";
+
+          lcd.clear();
+
+          lcd.setCursor(0, 0);
+          lcd.print("WRONG PIN");
+        }
+
+        delay(3000);
+
+        showReady();
+      }
+    }
+  }
+}
